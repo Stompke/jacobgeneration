@@ -1,5 +1,6 @@
 import { Hero } from "@/components/Hero";
 import { HourGrid } from "@/components/HourGrid";
+import { Invitation, Scripture } from "@/components/LandingCopy";
 import { loadPublicRoster } from "@/lib/roster";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +12,7 @@ export default async function HomePage() {
     <>
       <Hero />
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
-        <p className="max-w-2xl text-lg leading-8 text-muted">
-          Choose an hour to cover every day. Your request waits for confirmation.
-        </p>
-        <p className="mt-2 text-sm text-muted">Hours are Pacific Time.</p>
+        <Invitation />
 
         {roster.status === "unconfigured" ? (
           <p
@@ -37,12 +35,10 @@ export default async function HomePage() {
         <div className="mt-8">
           <HourGrid slots={roster.slots} bookable={roster.status !== "error"} />
         </div>
+
+        <Scripture />
       </main>
-      <footer className="px-6 py-8 text-center text-sm text-muted">
-        <a href="/admin" className="underline-offset-4 hover:underline">
-          Admin
-        </a>
-      </footer>
+
     </>
   );
 }
