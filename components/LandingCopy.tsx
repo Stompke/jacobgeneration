@@ -14,7 +14,7 @@ export function Invitation() {
   return (
     <div className="max-w-2xl">
       <p className="font-serif text-[1.7rem] leading-snug text-balance text-foreground sm:text-3xl">
-        Let’s join together and be the Jacob Generation that seeks the face of God for our
+        Let’s join together to be the Jacob Generation that seeks the face of God for our
         community and state!
       </p>
       <div className="mt-6 space-y-4 text-lg leading-8">
