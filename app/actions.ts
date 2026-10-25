@@ -72,7 +72,7 @@ export async function submitSignup(
   return {
     ok: true,
     hour,
-    message: `Your request for ${hourLabel(hour)} is in. It stays pending until it is confirmed.`,
+    message: `Your request to join ${hourLabel(hour)} is in. It stays pending until it is confirmed.`,
   };
 }
 
