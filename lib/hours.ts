@@ -6,7 +6,7 @@ export type PublicSlot = {
   hour: number;
   label: string;
   state: HourState;
-  firstName: string | null;
+  names: string[];
 };
 
 type Clock = {

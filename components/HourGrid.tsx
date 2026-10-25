@@ -45,21 +45,20 @@ export function HourGrid({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {slots.map((slot) => {
-          const open = bookable && slot.state === "open";
           const selectedCard = slot.hour === selectedHour;
           return (
             <button
               key={slot.hour}
               type="button"
-              disabled={!open}
+              disabled={!bookable}
               aria-pressed={selectedCard}
               onClick={() => setSelectedHour(slot.hour)}
               className={`min-h-24 rounded-2xl border px-3 py-3 text-left transition disabled:cursor-default ${cardClass(slot.state, selectedCard)}`}
             >
               <span className="block text-sm font-medium">{slot.label}</span>
               <span className="mt-2 block text-sm text-muted">
-                {slot.state === "filled" && slot.firstName
-                  ? `Filled · ${slot.firstName}`
+                {slot.names.length > 0
+                  ? `Filled · ${slot.names.join(", ")}`
                   : statusLabel(slot.state)}
               </span>
             </button>
@@ -80,6 +79,16 @@ export function HourGrid({
             <div>
               <h2 className="font-serif text-3xl text-foreground">Request {selected.label}</h2>
               <p className="mt-1 text-sm text-muted">Pacific Time, every day.</p>
+              <p className="mt-3 text-sm">
+                {selected.names.length > 0 ? (
+                  <>
+                    <span className="font-medium">Currently in this hour:</span>{" "}
+                    {selected.names.join(", ")}
+                  </>
+                ) : (
+                  <span className="text-muted">No one has joined this hour yet.</span>
+                )}
+              </p>
             </div>
             <button
               type="button"
@@ -146,7 +155,7 @@ export function HourGrid({
             disabled={pending}
             className="mt-5 rounded-full bg-pine px-5 py-2.5 text-sm font-medium text-white disabled:opacity-60"
           >
-            {pending ? "Sending…" : "Request this hour"}
+            {pending ? "Sending…" : "Request to join"}
           </button>
         </form>
       ) : null}
@@ -162,7 +171,7 @@ function statusLabel(state: PublicSlot["state"]): string {
 
 function cardClass(state: PublicSlot["state"], selected: boolean): string {
   if (selected) return "border-pine bg-white ring-2 ring-pine";
-  if (state === "filled") return "border-pine/20 bg-pine-soft text-foreground";
-  if (state === "pending") return "border-amber/30 bg-amber-soft text-foreground";
+  if (state === "filled") return "border-pine/20 bg-pine-soft text-foreground hover:border-pine/40";
+  if (state === "pending") return "border-amber/30 bg-amber-soft text-foreground hover:border-pine/40";
   return "border-line bg-paper hover:border-pine/40";
 }

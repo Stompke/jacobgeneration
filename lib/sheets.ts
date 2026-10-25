@@ -186,8 +186,14 @@ export async function listSignups(): Promise<Signup[]> {
     .filter((signup): signup is Signup => signup !== null);
 }
 
-function hourIsHeld(signups: Signup[], hour: number): boolean {
-  return signups.some((signup) => signup.hour === hour && BLOCKING.has(signup.status));
+function alreadyRequested(signups: Signup[], input: SignupInput): boolean {
+  const email = input.email.toLowerCase();
+  return signups.some(
+    (signup) =>
+      signup.hour === input.hour &&
+      signup.email.toLowerCase() === email &&
+      BLOCKING.has(signup.status),
+  );
 }
 
 export async function createSignup(input: SignupInput): Promise<Signup> {
@@ -196,8 +202,8 @@ export async function createSignup(input: SignupInput): Promise<Signup> {
   const signups = dataEntries(values)
     .map((entry) => entry.signup)
     .filter((signup): signup is Signup => signup !== null);
-  if (hourIsHeld(signups, input.hour)) {
-    throw new SheetError("That hour already has a request.", "taken");
+  if (alreadyRequested(signups, input)) {
+    throw new SheetError("You have already requested this hour.", "taken");
   }
 
   const now = new Date().toISOString();
@@ -254,17 +260,6 @@ async function writeStatus(id: string, next: SignupStatus, allowed: SignupStatus
       "conflict",
     );
   }
-  const otherApproved = entries.some(
-    (entry) =>
-      entry.signup !== null &&
-      entry.signup.id !== id &&
-      entry.signup.hour === signup.hour &&
-      entry.signup.status === "approved",
-  );
-  if (next === "approved" && otherApproved) {
-    throw new SheetError("That hour is already filled.", "taken");
-  }
-
   const updatedAt = new Date().toISOString();
   await sheetsFetch(config, "/values:batchUpdate", {
     method: "POST",
@@ -293,23 +288,16 @@ export async function releaseSignup(id: string): Promise<void> {
 export function slotsFromSignups(signups: Signup[]): PublicSlot[] {
   return HOURS.map((hour) => {
     const rows = signups.filter((signup) => signup.hour === hour);
-    const approved = rows
+    const names = rows
       .filter((signup) => signup.status === "approved")
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
-    if (approved) {
-      return {
-        hour,
-        label: hourLabel(hour),
-        state: "filled",
-        firstName: firstName(approved.name),
-      };
-    }
+      .sort((a, b) => a.updatedAt.localeCompare(b.updatedAt))
+      .map((signup) => firstName(signup.name));
     const pending = rows.some((signup) => signup.status === "pending");
     return {
       hour,
       label: hourLabel(hour),
-      state: pending ? "pending" : "open",
-      firstName: null,
+      state: names.length > 0 ? "filled" : pending ? "pending" : "open",
+      names,
     };
   });
 }
